@@ -13,7 +13,7 @@ clock = pygame.time.Clock()
 running = True
 
 # Load images
-main_player = pygame.image.load('spacechaser\\spaceship_sprite.png')
+main_player = pygame.image.load('spacechaser\\spaceship.png')
 main_player = pygame.transform.scale(main_player, (60, 60))  # Scale the spaceship image
 background = pygame.image.load('spacechaser\\space_background.png')
 asteroid_image = pygame.image.load('spacechaser\\asteroid_image.png')
