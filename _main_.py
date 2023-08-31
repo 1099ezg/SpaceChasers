@@ -13,13 +13,13 @@ clock = pygame.time.Clock()
 running = True
 
 # Load images
-main_player = pygame.image.load('spacechaser\\spaceship_sprite.png')
+main_player = pygame.image.load('spaceship_sprite.png')
 main_player = pygame.transform.scale(main_player, (60, 60))  # Scale the spaceship image
-background = pygame.image.load('spacechaser\\space_background.png')
-asteroid_image = pygame.image.load('spacechaser\\asteroid_image.png')
+background = pygame.image.load('space_background.png')
+asteroid_image = pygame.image.load('asteroid_image.png')
 asteroid_image = pygame.transform.scale(asteroid_image, (90, 90))
-title = pygame.image.load('spacechaser\\spacechasers_title.png')
-title_menu_background = pygame.image.load('spacechaser\\Menu_background.png')
+title = pygame.image.load('spacechasers_title.png')
+title_menu_background = pygame.image.load('Menu_background.png')
 title_menu_background = pygame.transform.scale(title_menu_background, (screen_width, screen_height))
 title_menu_surface = pygame.Surface((screen_width, screen_height))
 
@@ -27,7 +27,7 @@ title_menu_surface = pygame.Surface((screen_width, screen_height))
 
 # load music:
 pygame.mixer.init()
-pygame.mixer.music.load('spacechaser\\spacechaser_music.mp3') 
+pygame.mixer.music.load('spacechaser_music.mp3') 
 # Begin playing music at start of game loop
 pygame.mixer.music.play(-1)
 
