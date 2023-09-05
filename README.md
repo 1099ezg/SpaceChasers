@@ -1,5 +1,5 @@
 # SpaceChasers
-
+#### Video Demo: https://www.youtube.com/watch?v=1FcqSjJJVIo&ab_channel=EthanGabriel
 This is a basic 2D pixel game created using the pygame library.
 
 The game includes scoring along with high score tracking, collision detection to check for spaceship touching asteroids, as well as a difficulty timer where spaceship speed increases 25% every 20 seconds. 
