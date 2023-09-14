@@ -89,7 +89,7 @@ asteroid_speed = 5 # Speed of asteroid
 asteroid_spawn_timer = 0 # Timer for asteroid spawning
 asteroid_width = 40 # Width of asteroid
 asteroid_height = 40 # Height of asteroid
-max_asteroids = int(screen_width / (asteroid_width * 1.5))  # Maximum asteroids based on screen width and asteroid size
+max_asteroids = 200  # Maximum asteroids based on screen width and asteroid size
 
 # bullet section
 class Bullet:
@@ -108,7 +108,7 @@ max_bullets = 5
 remaining_bullets = max_bullets
 # fireball limiter
 last_bullet_shot = pygame.time.get_ticks()
-bullet_cooldown = 60000 # 60 seconds
+bullet_cooldown = 200 # 60 seconds
 
 # player health section section
 class Player:
@@ -150,7 +150,6 @@ while running:
 
     # Clear the screen
     screen.fill((0, 0, 0))
-    
     # Blit the title menu background onto the screen
     screen.blit(title_menu_background, (0, 0))
 
@@ -163,6 +162,7 @@ while running:
                     show_main_menu = False
                     game_started = True
                     score = 0
+                    elapsed_time = 0
                     spaceship_y = screen_height // 2 - spaceship_height // 2
                     asteroids.clear()
                 else:
@@ -237,7 +237,7 @@ while running:
         # Increase difficulty over time
         elapsed_time += clock.get_time()
         if elapsed_time >= 20000:  # 20 seconds
-            asteroid_speed += 2  # Increase the asteroid speed
+            asteroid_speed += 3  # Increase the asteroid speed
             elapsed_time = 0  # Reset the timer
 
             # add in a speeding up message for each diff increase
@@ -251,11 +251,12 @@ while running:
 
         #spawn astroids based on speed
         asteroid_spawn_interval = max(20, int(max_asteroids / asteroid_speed))  # Minimum of 20 frames between spawns
-
+        asteroid_spawn_timer += 1
         # Update asteroid positions
         for asteroid_rect in asteroids:
             asteroid_rect.x -= asteroid_speed  # Move asteroids towards the spaceship
-
+            if (asteroid_rect.x + 40)+ asteroid_width <= 0:
+                asteroids.remove(asteroid_rect)
         # collision fix
         spaceship_collision_rect = pygame.Rect(spaceship_x + 5, spaceship_y + 5, spaceship_width - 10, spaceship_height - 10)
 
@@ -279,7 +280,7 @@ while running:
                 bullets.remove(bullet)
         # bullet spawning and limiter:
             current_time = pygame.time.get_ticks()
-            if keys[pygame.K_SPACE] and current_time - last_bullet_shot >= bullet_cooldown and remaining_bullets > 0:
+            if keys[pygame.K_SPACE] and current_time - last_bullet_shot >= bullet_cooldown and remaining_bullets > 0: 
                 new_bullet = Bullet(spaceship_x + spaceship_width, spaceship_y + spaceship_height // 2)
                 bullets.append(new_bullet)
                 last_bullet_shot = current_time
@@ -289,8 +290,7 @@ while running:
             if time_since_last_shot >= bullet_cooldown and remaining_bullets < max_bullets:
                 remaining_bullets += time_since_last_shot // bullet_cooldown
                 last_bullet_shot = current_time
-                remaining_bullets = min(remaining_bullets, bullets)
-
+                remaining_bullets = min(remaining_bullets, max_bullets)
 # Collision detection
         for asteroid_rect in asteroids:
             asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
