@@ -3,7 +3,6 @@ import random
 import sys
 from pygame.locals import *
 import pygame.mixer
-
 # Pygame setup
 pygame.init()
 screen_width = 1280
@@ -11,7 +10,6 @@ screen_height = 720
 screen = pygame.display.set_mode((screen_width, screen_height))
 clock = pygame.time.Clock()
 running = True
-
 # Load images
 main_player = pygame.image.load('images//spaceship.png')
 main_player = pygame.transform.scale(main_player, (60, 60))  # Scale the spaceship image
@@ -85,7 +83,7 @@ spaceship_speed = 0
 
 # Define variables for asteroid spawning
 asteroids = [] # List of asteroids
-asteroid_speed = 5 # Speed of asteroid
+asteroid_speed = 7 # Speed of asteroid
 asteroid_spawn_timer = 0 # Timer for asteroid spawning
 asteroid_width = 40 # Width of asteroid
 asteroid_height = 40 # Height of asteroid
@@ -107,8 +105,8 @@ bullets = []
 max_bullets = 5
 remaining_bullets = max_bullets
 # fireball limiter
-last_bullet_shot = pygame.time.get_ticks()
-bullet_cooldown = 200 # 60 seconds
+bullet_refill_timer = pygame.time.get_ticks()
+bullet_refill_cooldown = 60000 # 60 seconds
 
 # player health section section
 class Player:
@@ -224,7 +222,6 @@ while running:
         for i in range(remaining_bullets):
             screen.blit(fireball_icon, (screen_width - (i + 1) * 30, screen_height - 40))
 
-
     if game_started:
         if keys[pygame.K_UP]:
             spaceship_y -= 5  # moving up
@@ -237,7 +234,7 @@ while running:
         # Increase difficulty over time
         elapsed_time += clock.get_time()
         if elapsed_time >= 20000:  # 20 seconds
-            asteroid_speed += 3  # Increase the asteroid speed
+            asteroid_speed += 2  # Increase the asteroid speed
             elapsed_time = 0  # Reset the timer
 
             # add in a speeding up message for each diff increase
@@ -280,17 +277,15 @@ while running:
                 bullets.remove(bullet)
         # bullet spawning and limiter:
             current_time = pygame.time.get_ticks()
-            if keys[pygame.K_SPACE] and current_time - last_bullet_shot >= bullet_cooldown and remaining_bullets > 0: 
+        if current_time - bullet_refill_timer >= bullet_refill_cooldown:
+            remaining_bullets = max_bullets
+            bullet_refill_timer = current_time
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and remaining_bullets > 0:
                 new_bullet = Bullet(spaceship_x + spaceship_width, spaceship_y + spaceship_height // 2)
                 bullets.append(new_bullet)
-                last_bullet_shot = current_time
                 remaining_bullets -= 1
-            # bullet cooldown
-            time_since_last_shot = current_time - last_bullet_shot
-            if time_since_last_shot >= bullet_cooldown and remaining_bullets < max_bullets:
-                remaining_bullets += time_since_last_shot // bullet_cooldown
-                last_bullet_shot = current_time
-                remaining_bullets = min(remaining_bullets, max_bullets)
 # Collision detection
         for asteroid_rect in asteroids:
             asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
@@ -313,10 +308,12 @@ while running:
 # bullet collison detection
                 for bullet in bullets:
                     bullet_rect = pygame.Rect(bullet.x, bullet.y, 10, 10)
-                    if bullet_rect.colliderect(asteroid_rect):
-                        bullets.remove(bullet)
-                        asteroids.remove(asteroid_rect)
-                        score += 10 # score increase for hitting asteroid
+                    for asteroid_rect in asteroids:
+                        asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
+                        if bullet_rect.colliderect(asteroid_collision_rect):
+                            bullets.remove(bullet)
+                            asteroids.remove(asteroid_rect)
+                            score += 100
     if game_over:
     # Clear the screen
         screen.blit(background, (0, 0))
