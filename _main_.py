@@ -13,31 +13,44 @@ clock = pygame.time.Clock()
 running = True
 
 # Load images
-main_player = pygame.image.load('spaceship.png')
+main_player = pygame.image.load('images//spaceship.png')
 main_player = pygame.transform.scale(main_player, (60, 60))  # Scale the spaceship image
-background = pygame.image.load('space_background.png')
-asteroid_image = pygame.image.load('asteroid_image.png')
+background = pygame.image.load('images//space_background.png')
+asteroid_image = pygame.image.load('images//asteroid_image.png')
 asteroid_image = pygame.transform.scale(asteroid_image, (90, 90))
-title = pygame.image.load('spacechasers_title.png')
-title_menu_background = pygame.image.load('Menu_background.png')
+title_menu_background = pygame.image.load('images//Menu_background.png')
 title_menu_background = pygame.transform.scale(title_menu_background, (screen_width, screen_height))
 title_menu_surface = pygame.Surface((screen_width, screen_height))
-
+fireball = pygame.image.load('images//fireball-sprite.png')
+fireball = pygame.transform.scale(fireball, (10, 10))
+enemyship = pygame.image.load('images//enemyship.png')
+enemyship = pygame.transform.scale(enemyship, (60, 60))
+heart = pygame.image.load('images//heart.png')
+heart = pygame.transform.scale(heart, (50, 50))
+heart_empty = pygame.image.load('images//heart_empty.png')
+heart_empty = pygame.transform.scale(heart_empty, (50, 50))
+volume_on = pygame.image.load('images//volume_on.png')
+volume_on = pygame.transform.scale(volume_on, (50, 50))
+volume_off = pygame.image.load('images//volume_off.png')
+volume_off = pygame.transform.scale(volume_off, (50, 50))
+# fireball for bottom right display
+fireball_icon_= pygame.image.load('images//fireball-sprite.png')
+fireball_icon = pygame.transform.scale(fireball_icon_, (30, 30))
 # Music Set Up Section
 
 # load music:
 pygame.mixer.init()
-pygame.mixer.music.load('spacechaser_music.mp3') 
+pygame.mixer.music.load('music//spacechaser_music.mp3') 
 # Begin playing music at start of game loop
 pygame.mixer.music.play(-1)
-
+volume_button = volume_on
 # Menu Section:
 # Define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 # Text font:
-font = pygame.font.Font(None, 36)  # Common font for text
+font = pygame.font.Font(None, 50)  # Common font for text
 # Display caption
 pygame.display.set_caption("Space Chaser")
 
@@ -78,7 +91,60 @@ asteroid_width = 40 # Width of asteroid
 asteroid_height = 40 # Height of asteroid
 max_asteroids = int(screen_width / (asteroid_width * 1.5))  # Maximum asteroids based on screen width and asteroid size
 
+# bullet section
+class Bullet:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+    def move(self):
+        self.x += 15
+    def draw(self):
+        screen.blit(fireball, (self.x, self.y))
 
+# list for bullets
+bullets = []
+# fireball counter for remaining bullets
+max_bullets = 5
+remaining_bullets = max_bullets
+# fireball limiter
+last_bullet_shot = pygame.time.get_ticks()
+bullet_cooldown = 60000 # 60 seconds
+
+# player health section section
+class Player:
+    def __init__(self):
+        self.health = 3
+        self.max_health = 3
+        self.is_invulnerable = False # invincibility for 2 seconds after damage inflicted
+        self.invulnerability_duration = 20
+        self.last_damage_time = 0 # timer for damage
+
+    def draw_health(self):
+        heart_spacing = 34
+        for i in range(self.max_health):
+            heart_x = 10 + i * heart_spacing
+            heart_y = screen_height - 50
+            if i < self.health:
+                screen.blit(heart, (heart_x, heart_y))
+            else:
+                screen.blit(heart_empty, (heart_x, heart_y))
+    
+    def take_damage(self):
+        if not self.is_invulnerable:
+            self.health -= 1
+            self.is_invulnerable = True
+            self.last_damage_time = pygame.time.get_ticks()
+    
+    def update(self):
+        if self.is_invulnerable:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_damage_time >= self.invulnerability_duration:
+                self.is_invulnerable = False
+    # resetting health for restarted game
+    def reset_health(self):
+        self.health = self.max_health
+        self.is_invulnerable = False
+player = Player()
 # Main game loop
 while running:
 
@@ -93,7 +159,7 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button trigger
             if show_main_menu:
-                if not game_started:
+                if not game_started and start_game_rect.collidepoint(event.pos):
                     show_main_menu = False
                     game_started = True
                     score = 0
@@ -102,30 +168,42 @@ while running:
                 else:
                     # Handle game logic here
                     pass
-
+    # volume rocker button
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if button_x <= mouse_x <= button_x + volume_button.get_width() and button_y <= mouse_y <= button_y + volume_button.get_height():
+                if volume_button == volume_on:
+                    volume_button = volume_off
+                    pygame.mixer.music.pause()
+                else:
+                    volume_button = volume_on
+                    pygame.mixer.music.unpause()  
+                  
     keys = pygame.key.get_pressed()
+            
 
     # Draw the screen
     screen.fill((0, 0, 0))
     if show_main_menu:
         screen.blit(title_menu_background, (0, 0))
-        screen.blit(title, (100, 100))
 
         # Calculate the center point of the screen
         center_x = screen_width // 2
         center_y = screen_height // 2
-        pygame.draw.rect(screen, WHITE, ((screen_width - 200) // 2, 415 - 25, 200, 50))
+        #pygame.draw.rect(screen, WHITE, ((screen_width - 200) // 2, 415 - 25, 200, 50))
 
-        
+        # display music toggle
+        button_x = 10
+        button_y = screen_height - volume_button.get_height() - 10
+        screen.blit(volume_button, (button_x, button_y))
         # display high score
         high_score_text = font.render(f"High Score: {high_score}", True, WHITE)
         high_score_rect = high_score_text.get_rect(center=(center_x, center_y - 50))  # Move up from the center
         screen.blit(high_score_text, high_score_rect)
     
         # start game button
-        start_game_text = font.render("Start Game", True, BLACK)
-        start_game_rect = start_game_text.get_rect(center=(center_x, center_y + 50))  # Move down from the center
-        pygame.draw.rect(screen, WHITE, start_game_rect)  # Draw background for the button
+        start_game_text = font.render("Start Game", True, WHITE)
+        start_game_rect = start_game_text.get_rect(center=(center_x, center_y + 120))  # Move down from the center
         screen.blit(start_game_text, start_game_rect)
         
     else:
@@ -137,6 +215,15 @@ while running:
         # Display score
         score_text = font.render(f"Score: {score}", True, WHITE)
         screen.blit(score_text, (10, 10))
+
+        # display health
+        player.update()
+        player.draw_health()
+
+        # display bullets: 
+        for i in range(remaining_bullets):
+            screen.blit(fireball_icon, (screen_width - (i + 1) * 30, screen_height - 40))
+
 
     if game_started:
         if keys[pygame.K_UP]:
@@ -183,14 +270,37 @@ while running:
                 asteroid_y = random.randint(0, screen_height - asteroid_height)
                 asteroid_rect = pygame.Rect(asteroid_x, asteroid_y, asteroid_width, asteroid_height)
                 asteroids.append(asteroid_rect)
-
+# bullet handling section
+        for bullet in bullets:
+            bullet.move()
+            bullet.draw()
+        # remove off screen bullets to save memory
+            if bullet.x > screen_width:
+                bullets.remove(bullet)
+        # bullet spawning and limiter:
+            current_time = pygame.time.get_ticks()
+            if keys[pygame.K_SPACE] and current_time - last_bullet_shot >= bullet_cooldown and remaining_bullets > 0:
+                new_bullet = Bullet(spaceship_x + spaceship_width, spaceship_y + spaceship_height // 2)
+                bullets.append(new_bullet)
+                last_bullet_shot = current_time
+                remaining_bullets -= 1
+            # bullet cooldown
+            time_since_last_shot = current_time - last_bullet_shot
+            if time_since_last_shot >= bullet_cooldown and remaining_bullets < max_bullets:
+                remaining_bullets += time_since_last_shot // bullet_cooldown
+                last_bullet_shot = current_time
+                remaining_bullets = min(remaining_bullets, bullets)
 
 # Collision detection
-            for asteroid_rect in asteroids:
-                asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
-                if spaceship_collision_rect.colliderect(asteroid_collision_rect):
-                    if score > high_score:
-                        high_score = score
+        for asteroid_rect in asteroids:
+            asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
+            if spaceship_collision_rect.colliderect(asteroid_collision_rect):
+                if score > high_score:
+                    high_score = score
+                if player.health > 0:
+                    player.take_damage()
+                    asteroids.remove(asteroid_rect)
+                if player.health <= 0:
                     game_over = True  
                     game_started = False  # Game has ended
                     spaceship_velocity = 0
@@ -200,8 +310,13 @@ while running:
                     break  # Exit the loop since the game has ended
                 elif asteroid_rect.x + asteroid_width <= 0:
                     asteroids.remove(asteroid_rect)
-
-# game over block
+# bullet collison detection
+                for bullet in bullets:
+                    bullet_rect = pygame.Rect(bullet.x, bullet.y, 10, 10)
+                    if bullet_rect.colliderect(asteroid_rect):
+                        bullets.remove(bullet)
+                        asteroids.remove(asteroid_rect)
+                        score += 10 # score increase for hitting asteroid
     if game_over:
     # Clear the screen
         screen.blit(background, (0, 0))
@@ -230,6 +345,11 @@ while running:
                     asteroids.clear()
                     asteroid_speed = 5
                     score = 0  # Reset the score
+                    # Reset fireballs
+                    remaining_bullets = max_bullets
+                    # reset hearts: 
+                    player.reset_health()
+
         continue
 
     # display speeding up message 
