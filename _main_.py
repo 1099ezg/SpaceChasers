@@ -3,6 +3,7 @@ import random
 import sys
 from pygame.locals import *
 import pygame.mixer
+
 # Pygame setup
 pygame.init()
 screen_width = 1280
@@ -10,6 +11,7 @@ screen_height = 720
 screen = pygame.display.set_mode((screen_width, screen_height))
 clock = pygame.time.Clock()
 running = True
+
 # Load images
 main_player = pygame.image.load('images//spaceship.png')
 main_player = pygame.transform.scale(main_player, (60, 60))  # Scale the spaceship image
@@ -34,27 +36,32 @@ volume_off = pygame.transform.scale(volume_off, (50, 50))
 # fireball for bottom right display
 fireball_icon_= pygame.image.load('images//fireball-sprite.png')
 fireball_icon = pygame.transform.scale(fireball_icon_, (30, 30))
-# Music Set Up Section
 
+# Music Set Up Section
 # load music:
 pygame.mixer.init()
 pygame.mixer.music.load('music//spacechaser_music.mp3') 
+
 # Begin playing music at start of game loop
 pygame.mixer.music.play(-1)
 volume_button = volume_on
+
 # Menu Section:
 # Define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
+
 # Text font:
 font = pygame.font.Font(None, 50)  # Common font for text
+
 # Display caption
 pygame.display.set_caption("Space Chaser")
 
 # Set up variables for main menu and game started or over
 show_main_menu = True
 game_started = False
+
 # Tracking variable to see if game is over
 game_over = False
 
@@ -64,6 +71,7 @@ high_score = 0
 
 # Time variable for difficulty speed increase
 elapsed_time = 0
+
 #increase message
 speeding_up_timer = 0
 show_speeding_up_message = False
@@ -76,11 +84,11 @@ spaceship_x = 100 # Ensure spaceship starts at left of the screen
 
 # Ensure spaceship starts at center of the screen
 spaceship_y = screen_height // 2 - spaceship_height // 2 
+
 # Setup Speed for spaceship (Should not move except up and down)
 spaceship_speed = 0 
 
 # Asteroid Section
-
 # Define variables for asteroid spawning
 asteroids = [] # List of asteroids
 asteroid_speed = 7 # Speed of asteroid
@@ -101,9 +109,11 @@ class Bullet:
 
 # list for bullets
 bullets = []
+
 # fireball counter for remaining bullets
 max_bullets = 5
 remaining_bullets = max_bullets
+
 # fireball limiter
 bullet_refill_timer = pygame.time.get_ticks()
 bullet_refill_cooldown = 60000 # 60 seconds
@@ -138,18 +148,26 @@ class Player:
             current_time = pygame.time.get_ticks()
             if current_time - self.last_damage_time >= self.invulnerability_duration:
                 self.is_invulnerable = False
+
     # resetting health for restarted game
     def reset_health(self):
         self.health = self.max_health
         self.is_invulnerable = False
 player = Player()
+
+
 # Main game loop
 while running:
 
     # Clear the screen
     screen.fill((0, 0, 0))
+
     # Blit the title menu background onto the screen
     screen.blit(title_menu_background, (0, 0))
+
+    # bullet list to reset empty lists on each iteration
+    bullets_to_remove = []
+    asteroids_to_remove = []
 
     for event in pygame.event.get(): # Check for events
         if event.type == pygame.QUIT:
@@ -166,6 +184,7 @@ while running:
                 else:
                     # Handle game logic here
                     pass
+
     # volume rocker button
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -194,6 +213,7 @@ while running:
         button_x = 10
         button_y = screen_height - volume_button.get_height() - 10
         screen.blit(volume_button, (button_x, button_y))
+
         # display high score
         high_score_text = font.render(f"High Score: {high_score}", True, WHITE)
         high_score_rect = high_score_text.get_rect(center=(center_x, center_y - 50))  # Move up from the center
@@ -222,6 +242,7 @@ while running:
         for i in range(remaining_bullets):
             screen.blit(fireball_icon, (screen_width - (i + 1) * 30, screen_height - 40))
 
+ # game started loop
     if game_started:
         if keys[pygame.K_UP]:
             spaceship_y -= 5  # moving up
@@ -249,15 +270,17 @@ while running:
         #spawn astroids based on speed
         asteroid_spawn_interval = max(20, int(max_asteroids / asteroid_speed))  # Minimum of 20 frames between spawns
         asteroid_spawn_timer += 1
+
         # Update asteroid positions
         for asteroid_rect in asteroids:
             asteroid_rect.x -= asteroid_speed  # Move asteroids towards the spaceship
             if (asteroid_rect.x + 40)+ asteroid_width <= 0:
                 asteroids.remove(asteroid_rect)
+
         # collision fix
         spaceship_collision_rect = pygame.Rect(spaceship_x + 5, spaceship_y + 5, spaceship_width - 10, spaceship_height - 10)
 
-        # Spawn new asteroids timer
+# Spawn new asteroids section
         if len(asteroids) < max_asteroids:
             asteroid_spawn_timer += 1
             if asteroid_spawn_timer >= asteroid_spawn_interval:
@@ -268,24 +291,7 @@ while running:
                 asteroid_y = random.randint(0, screen_height - asteroid_height)
                 asteroid_rect = pygame.Rect(asteroid_x, asteroid_y, asteroid_width, asteroid_height)
                 asteroids.append(asteroid_rect)
-# bullet handling section
-        for bullet in bullets:
-            bullet.move()
-            bullet.draw()
-        # remove off screen bullets to save memory
-            if bullet.x > screen_width:
-                bullets.remove(bullet)
-        # bullet spawning and limiter:
-            current_time = pygame.time.get_ticks()
-        if current_time - bullet_refill_timer >= bullet_refill_cooldown:
-            remaining_bullets = max_bullets
-            bullet_refill_timer = current_time
 
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and remaining_bullets > 0:
-                new_bullet = Bullet(spaceship_x + spaceship_width, spaceship_y + spaceship_height // 2)
-                bullets.append(new_bullet)
-                remaining_bullets -= 1
 # Collision detection
         for asteroid_rect in asteroids:
             asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
@@ -305,17 +311,47 @@ while running:
                     break  # Exit the loop since the game has ended
                 elif asteroid_rect.x + asteroid_width <= 0:
                     asteroids.remove(asteroid_rect)
-# bullet collison detection
-                for bullet in bullets:
-                    bullet_rect = pygame.Rect(bullet.x, bullet.y, 10, 10)
-                    for asteroid_rect in asteroids:
-                        asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
-                        if bullet_rect.colliderect(asteroid_collision_rect):
-                            bullets.remove(bullet)
-                            asteroids.remove(asteroid_rect)
-                            score += 100
+
+# bullet handling section
+        for bullet in bullets:
+            bullet.move()
+            bullet.draw()
+            bullet_rect = pygame.Rect(bullet.x, bullet.y, 10, 10)
+
+        # collision detection for bullet
+            for asteroid_rect in asteroids:
+                asteroid_collision_rect = pygame.Rect(asteroid_rect.x, asteroid_rect.y, asteroid_width, asteroid_height)
+
+                if bullet_rect.colliderect(asteroid_collision_rect):
+                    bullets_to_remove.append(bullet)
+                    asteroids_to_remove.append(asteroid_rect)
+                    score += 100
+
+        # remove bullet and asteroid after the loops
+        for bullet in bullets_to_remove:
+            bullets.remove(bullet)
+        for asteroid_rect in asteroids_to_remove:
+            asteroids.remove(asteroid_rect)
+
+        # remove off screen bullets to save memory
+            if bullet.x > screen_width:
+                bullets.remove(bullet)
+             
+        # bullet spawning and limiter:
+            current_time = pygame.time.get_ticks()
+        if current_time - bullet_refill_timer >= bullet_refill_cooldown:
+            remaining_bullets = max_bullets
+            bullet_refill_timer = current_time
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and remaining_bullets > 0:
+                new_bullet = Bullet(spaceship_x + spaceship_width, spaceship_y + spaceship_height // 2)
+                bullets.append(new_bullet)
+                remaining_bullets -= 1
+
+# Game over section
     if game_over:
-    # Clear the screen
+        # Clear the screen
         screen.blit(background, (0, 0))
 
         # Display "Game Over" message
@@ -340,7 +376,7 @@ while running:
                     game_started = False
                     spaceship_y = screen_height // 2 - spaceship_height // 2
                     asteroids.clear()
-                    asteroid_speed = 5
+                    asteroid_speed = 7
                     score = 0  # Reset the score
                     # Reset fireballs
                     remaining_bullets = max_bullets
@@ -360,6 +396,7 @@ while running:
     pygame.display.flip()
     clock.tick(60)  # 60 FPS
     screen.blit(title_menu_surface, (0, 0))
+
     # stop music 
     if not running:
         pygame.mixer.music.stop()
