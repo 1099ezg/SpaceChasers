@@ -328,11 +328,10 @@ while running:
                     score += 100
 
         # remove bullet and asteroid after the loops
-        for bullet in bullets_to_remove:
-            bullets.remove(bullet)
-        for asteroid_rect in asteroids_to_remove:
-            asteroids.remove(asteroid_rect)
-
+            for bullet in bullets_to_remove:
+                bullets.remove(bullet)
+            for asteroid_rect in asteroids_to_remove:
+                asteroids.remove(asteroid_rect)
         # remove off screen bullets to save memory
             if bullet.x > screen_width:
                 bullets.remove(bullet)

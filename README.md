@@ -3,6 +3,7 @@
 
 #### How to play:
 The player will begin the game by pressing the start game button. Once in the game, the user has control of the spacecraft using the UP and Down arrow keys to dodge the oncoming asteroids. The Asteroids will start very slow to give the user time to understand the mechanics of the game and how to dodge. However every 20 seconds, the screen will flash "Speeding Up" to indicate to the player that the difficulty has been increased, as asteroids will come 25% faster. This may seem easy, however once minutes past, the game will get very difficult trying to dodge the asteroids fast enough to survive.
+
 #### Description:
 The game SpaceChasers is a python game with around 400 lines of code making a 2D pixel asteroid dodging spacecraft game. This game includes collision detection, difficulty timers, health, bullet mechanics, complex generation depending on the difficulty, as well as main menu, game over screen, and score tracking.
 
