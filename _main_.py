@@ -328,16 +328,16 @@ while running:
                     score += 100
 
         # remove bullet and asteroid after the loops
-            for bullet in bullets_to_remove:
+        for bullet in bullets_to_remove:
                 bullets.remove(bullet)
-            for asteroid_rect in asteroids_to_remove:
+        for asteroid_rect in asteroids_to_remove:
                 asteroids.remove(asteroid_rect)
         # remove off screen bullets to save memory
-            if bullet.x > screen_width:
-                bullets.remove(bullet)
+                if bullet.x > screen_width:
+                    bullets.remove(bullet)
              
         # bullet spawning and limiter:
-            current_time = pygame.time.get_ticks()
+                current_time = pygame.time.get_ticks()
         if current_time - bullet_refill_timer >= bullet_refill_cooldown:
             remaining_bullets = max_bullets
             bullet_refill_timer = current_time
