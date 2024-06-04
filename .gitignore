@@ -1,1 +1,3 @@
-#ignoring git here
+#Ignoring these files here
+venv/
+.env
