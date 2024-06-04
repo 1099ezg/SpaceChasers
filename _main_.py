@@ -404,6 +404,9 @@ while running:
 
 # Game over section
     if game_over:
+        # Insert the score into the database
+        insert_score(initials, score)
+
         # Clear the screen
         screen.blit(background, (0, 0))
 
