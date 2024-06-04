@@ -30,11 +30,12 @@ def insert_score(initials, score):
 def get_highest_scores():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT initials, MAX(score) as max_score FROM high_scores GROUP BY initials ORDER BY max_score DESC LIMIT 5")
+    cursor.execute("SELECT initials, MAX(score) as max_score FROM high_scores GROUP BY initials ORDER BY max_score DESC LIMIT 10")
     results = cursor.fetchall()
     cursor.close()
     conn.close()
     return results
+
 
 # Get initials from user 
 def get_initials():
@@ -272,7 +273,15 @@ while running:
         high_score_text = font.render(f"High Score: {high_score}", True, WHITE)
         high_score_rect = high_score_text.get_rect(center=(center_x, center_y - 50))  # Move up from the center
         screen.blit(high_score_text, high_score_rect)
-    
+
+        # Display high scores list
+        high_scores = get_highest_scores()
+        high_scores_text = font.render("High Scores:", True, WHITE)
+        screen.blit(high_scores_text, (center_x + 350, center_y - 150))
+        for i, (initials, score) in enumerate(high_scores):
+            score_text = font.render(f"{i + 1}. {initials}: {score}", True, WHITE)
+            screen.blit(score_text, (center_x + 350, center_y - 100 + i * 30))
+
         # start game button
         start_game_text = font.render("Start Game", True, WHITE)
         start_game_rect = start_game_text.get_rect(center=(center_x, center_y + 120))  # Move down from the center
@@ -406,6 +415,9 @@ while running:
     if game_over:
         # Insert the score into the database
         insert_score(initials, score)
+
+        # Reset speeding up message
+        show_speeding_up_message = False
 
         # Clear the screen
         screen.blit(background, (0, 0))
