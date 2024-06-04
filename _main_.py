@@ -36,6 +36,28 @@ def get_highest_scores():
     conn.close()
     return results
 
+# Get initials from user 
+def get_initials():
+    initials = ""
+    collecting = True
+    while collecting:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_RETURN:
+                    collecting = False
+                elif event.key == K_BACKSPACE:
+                    initials = initials[:-1]
+                else:
+                    initials += event.unicode
+        screen.fill((0, 0, 0))
+        text = font.render(f"Enter your Initials: {initials}", True, WHITE)
+        screen.blit(text, (screen_width // 2 - text.get_width() // 2, screen_height // 2 - text.get_height() // 2))
+        pygame.display.flip()
+    return initials[:3].upper()
+
 # Pygame setup
 pygame.init()
 screen_width = 1280
@@ -201,12 +223,14 @@ while running:
     bullets_to_remove = []
     asteroids_to_remove = []
 
-    for event in pygame.event.get(): # Check for events
+    # Menu Setup
+    for event in pygame.event.get(): 
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button trigger
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  
             if show_main_menu:
                 if not game_started and start_game_rect.collidepoint(event.pos):
+                    initials = get_initials()  
                     show_main_menu = False
                     game_started = True
                     score = 0
@@ -214,7 +238,6 @@ while running:
                     spaceship_y = screen_height // 2 - spaceship_height // 2
                     asteroids.clear()
                 else:
-                    # Handle game logic here
                     pass
 
     # volume rocker button
@@ -239,7 +262,6 @@ while running:
         # Calculate the center point of the screen
         center_x = screen_width // 2
         center_y = screen_height // 2
-        #pygame.draw.rect(screen, WHITE, ((screen_width - 200) // 2, 415 - 25, 200, 50))
 
         # display music toggle
         button_x = 10
