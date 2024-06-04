@@ -1,8 +1,40 @@
+import os
 import pygame
 import random
 import sys
+import mysql.connector
+from dotenv import load_dotenv
 from pygame.locals import *
 import pygame.mixer
+
+# Load environment variables for DB
+load_dotenv()
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME')
+    )
+
+# MySQL Scoring
+def insert_score(initials, score):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO high_scores (initials, score) VALUES (%s, %s)", (initials, score))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def get_highest_scores():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT initials, MAX(score) as max_score FROM high_scores GROUP BY initials ORDER BY max_score DESC LIMIT 5")
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return results
 
 # Pygame setup
 pygame.init()
